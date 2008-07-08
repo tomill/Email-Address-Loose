@@ -74,10 +74,10 @@ Email::Address::Loose - Make Email::Address->parse() loose
   
 =head1 DESCRIPTION
 
-Email::Address::Loose is-a L<Email::Address>, but parse() is "loose" as
+Email::Address::Loose is-a L<Email::Address>, but C<parse()> is "loose" as
 L<Email::Valid::Loose>.
 
-=head1 METHODS
+=head1 EXTENDED METHODS
 
 =over 4
 
@@ -86,6 +86,12 @@ L<Email::Valid::Loose>.
   my ($email) = Email::Address::Loose->parse('Docomo <read_rfc822.@docomo.ne.jp>');
 
 see L<Email::Address/parse>.
+
+=back
+
+=head1 ORIGINAL METHODS
+
+=over 4
 
 =item globally_override
 
@@ -101,7 +107,7 @@ Same thing, compile time.
 
   Email::Address::Loose->globally_unoverride;
 
-Restores override-ed Email::Address->parse.
+Restores override-ed C<< Email::Address->parse >>.
 
 =back
 
