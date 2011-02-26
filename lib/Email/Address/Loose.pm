@@ -3,15 +3,7 @@ use strict;
 use warnings;
 our $VERSION = '0.01';
 
-use base qw( Email::Address );
-
-use Email::Address::Loose::EmailAddress;
-
-sub parse {
-    Email::Address::Loose::EmailAddress::parse(@_);
-}
-
-my $Email_Address_parse;
+use base 'Email::Address::Loose::EmailAddress';
 
 sub import {
     my ($class, @args) = @_;
@@ -20,13 +12,15 @@ sub import {
     }
 }
 
+my $Email_Address_parse;
+
 sub globally_override {
     my $class = shift;
 
     no warnings 'redefine';
     unless ($Email_Address_parse) {
         $Email_Address_parse = \&Email::Address::parse;
-        *Email::Address::parse = \&parse;
+        *Email::Address::parse = \&Email::Address::Loose::EmailAddress::parse;
     }
 
     1;
