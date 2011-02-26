@@ -1,27 +1,74 @@
-This is Perl module Email::Address::Loose.
+NAME
+    Email::Address::Loose - Make Email::Address->parse() loose
 
-INSTALLATION
+SYNOPSIS
+      my $address = 'read..rfc822.@docomo.ne.jp'; # Email::Addess can't find
+  
+      use Email::Address::Loose;
+      my ($email) = Email::Address::Loose->parse($address); # find!
 
-Email::Address::Loose installation is straightforward. If your CPAN shell is set up,
-you should just be able to do
+      use Email::Address;
+      use Email::Address::Loose -override;
+      my ($email) = Email::Address->parse($address); # find!
 
-    % cpan Email::Address::Loose
+DESCRIPTION
+    Email::Address::Loose is a Email::Address, but "parse()" is "loose" same
+    as Email::Valid::Loose.
 
-Download it, unpack it, then build it as per the usual:
+    This module is for web developers in Japan.
 
-    % perl Makefile.PL
-    % make && make test
+    This module is needed because email address by the Japanese mobile
+    carrier was not RFC compliant. Fortunately, this evil spec was changed
+    in April 2009(docomo), October 2009(kddi). However email address that
+    taken before 2009 is still available. So this module is still needed.
 
-Then install it:
+    ドコモやauがドットを連続で使ったり@マークの直前にドットを置くなど
+    RFC外のメールアドレスを許可していましたが、Email::Addressではそれをメールアドレスと
+    認識しません。このモジュールはそれらを許可するようにします。 現在はそのようなアドレスは新規に取れないようですが、以前に取ったものは使い続け
+    られているようなので、このモジュールを使っておいた方がいいでしょう。
 
-    % make install
+USAGE
+      my ($email) = Email::Address::Loose->parse('docomo..taro.@docomo.ne.jp');
+      print $email->address; # => "docomo..taro.@docomo.ne.jp"
+      print $email;          # => "docomo..taro.@docomo.ne.jp" (as_string)
+      print $email->user;    # => "docomo..taro."
+      print $email->host;    # => "docomo.ne.jp"
 
-DOCUMENTATION
+    Same as Email::Address.
 
-Email::Address::Loose documentation is available as in POD. So you can do:
+IMPORT OPTION
+    -override
+          use Email::Address;
+          use Email::Address::Loose -override;
+   
+          my ($email) = Email::Address->parse('docomo..taro.@docomo.ne.jp');
+          print $email->address; # => "docomo..taro.@docomo.ne.jp"
 
-    % perldoc Email::Address::Loose
+        Call "globally_override()"(see below) at compile time.
 
-to read the documentation online with your favorite pager.
+ORIGINAL METHODS
+    globally_override()
+          Email::Address::Loose->globally_override;
 
-Naoki Tomita
+        Changes "Email::Address->parse()" into
+        "Email::Address::Loose->parse()".
+
+    globally_unoverride()
+          Email::Address::Loose->globally_unoverride;
+
+        Restores override-ed "Email::Address->parse()".
+
+SEE ALSO
+    Email::Address, Email::Valid::Loose - this module based on these.
+
+    Email::Address::JP::Mobile - will help you too.
+
+    #mobilejp on irc.freenode.net (I've joined as "tomi-ru")
+
+AUTHOR
+    Naoki Tomita <tomita@cpan.org>
+
+LICENSE
+    This library is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself.
+
