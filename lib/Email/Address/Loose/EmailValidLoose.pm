@@ -1,6 +1,12 @@
 package Email::Address::Loose::EmailValidLoose;
 
-# Note: The following code were copied from Email::Valid::Loose 0.05
+# Note:
+# The following code were copied from Email::Valid::Loose 0.05.
+# http://search.cpan.org/perldoc?Email::Valid::Loose
+# To make same behavior with Email::Valid::Loose about local-part.
+
+
+
 
 
 use strict;
@@ -35,5 +41,5 @@ my $local_part  = qq<$word(?:$word|$period)*>; # This part is modified
 use vars qw($Addr_spec_re);
 $Addr_spec_re   = qr<$local_part\@$domain>;
 
-sub peek_local_part { qr/$local_part/ } # Note: added!!
+sub peek_local_part { qr/$local_part/ } # Note: added by Email::Address::Loose
 1;

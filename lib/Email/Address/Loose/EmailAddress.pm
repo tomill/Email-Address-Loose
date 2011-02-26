@@ -1,8 +1,16 @@
 package Email::Address::Loose::EmailAddress;
-use Email::Address::Loose::EmailValidLoose;
 
 ## no critic
-# Note: The following code were copied from Email::Address 1.889
+use base 'Email::Address'; # for isa("Email::Address");
+use Email::Address::Loose::EmailValidLoose;
+
+# Note:
+# The following code were copied from Email::Address 1.892.
+# http://search.cpan.org/perldoc?Email::Address
+# To make same behavior with Email::Address escept local-part.
+
+
+
 
 use strict;
 ## no critic RequireUseWarnings
@@ -15,7 +23,7 @@ use vars qw[$VERSION $COMMENT_NEST_LEVEL $STRINGIFY
 
 my $NOCACHE;
 
-$VERSION              = '1.889';
+$VERSION              = '1.892';
 $COMMENT_NEST_LEVEL ||= 2;
 $STRINGIFY          ||= 'format';
 $COLLAPSE_SPACES      = 1 unless defined $COLLAPSE_SPACES; # who wants //=? me!
@@ -64,7 +72,9 @@ my $obs_phrase     = qr/$simple_word+/;
 
 my $phrase         = qr/$obs_phrase|(?:$word+)/;
 
-my $local_part     = Email::Address::Loose::EmailValidLoose->peek_local_part; # Note: this line was replaced!! qr/$dot_atom|$quoted_string/;
+my $local_part     = qr/$dot_atom|$quoted_string/;
+$local_part = Email::Address::Loose::EmailValidLoose->peek_local_part; # Note: added by Email::Address::Loose
+
 my $dtext          = qr/[^\[\]\\]/;
 my $dcontent       = qr/$dtext|$quoted_pair/;
 my $domain_literal = qr/$cfws*\[(?:\s*$dcontent)*\s*\]$cfws*/;
@@ -147,5 +157,134 @@ sub parse {
 }
 
 
+sub new {
+  my ($class, $phrase, $email, $comment, $orig) = @_;
+  $phrase =~ s/\A"(.+)"\z/$1/ if $phrase;
+
+  bless [ $phrase, $email, $comment, $orig ] => $class;
+}
+
+
+sub purge_cache {
+    %NAME_CACHE   = ();
+    %FORMAT_CACHE = ();
+    %PARSE_CACHE  = ();
+}
+
+
+sub disable_cache {
+  my ($class) = @_;
+  $class->purge_cache;
+  $NOCACHE = 1;
+}
+
+sub enable_cache {
+  $NOCACHE = undef;
+}
+
+
+BEGIN {
+  my %_INDEX = (
+    phrase   => _PHRASE,
+    address  => _ADDRESS,
+    comment  => _COMMENT,
+    original => _ORIGINAL,
+  );
+
+  for my $method (keys %_INDEX) {
+    no strict 'refs';
+    my $index = $_INDEX{ $method };
+    *$method = sub {
+      if ($_[1]) {
+        if ($_[0][_IN_CACHE]) {
+          my $replicant = bless [ @{$_[0]} ] => ref $_[0];
+          $PARSE_CACHE{ ${ $_[0][_IN_CACHE][0] } }[ $_[0][_IN_CACHE][1] ] 
+            = $replicant;
+          $_[0][_IN_CACHE] = undef;
+        }
+        $_[0]->[ $index ] = $_[1];
+      } else {
+        $_[0]->[ $index ];
+      }
+    };
+  }
+}
+
+sub host { ($_[0]->[_ADDRESS] =~ /\@($domain)/o)[0]     }
+sub user { ($_[0]->[_ADDRESS] =~ /($local_part)\@/o)[0] }
+
+
+sub format {
+    local $^W = 0; ## no critic
+    return $FORMAT_CACHE{"@{$_[0]}"} if exists $FORMAT_CACHE{"@{$_[0]}"};
+    $FORMAT_CACHE{"@{$_[0]}"} = $_[0]->_format;
+}
+
+sub _format {
+    my ($self) = @_;
+
+    unless (
+      defined $self->[_PHRASE] && length $self->[_PHRASE]
+      ||
+      defined $self->[_COMMENT] && length $self->[_COMMENT]
+    ) {
+        return $self->[_ADDRESS];
+    }
+
+    my $format = sprintf q{%s <%s> %s},
+                 $self->_enquoted_phrase, $self->[_ADDRESS], $self->[_COMMENT];
+
+    $format =~ s/^\s+//;
+    $format =~ s/\s+$//;
+
+    return $format;
+}
+
+sub _enquoted_phrase {
+  my ($self) = @_;
+
+  my $phrase = $self->[_PHRASE];
+
+  # if it's encoded -- rjbs, 2007-02-28
+  return $phrase if $phrase =~ /\A=\?.+\?=\z/;
+
+  $phrase =~ s/\A"(.+)"\z/$1/;
+  $phrase =~ s/\"/\\"/g;
+
+  return qq{"$phrase"};
+}
+
+
+sub name {
+    local $^W = 0;
+    return $NAME_CACHE{"@{$_[0]}"} if exists $NAME_CACHE{"@{$_[0]}"};
+    my ($self) = @_;
+    my $name = q{};
+    if ( $name = $self->[_PHRASE] ) {
+        $name =~ s/^"//;
+        $name =~ s/"$//;
+        $name =~ s/($quoted_pair)/substr $1, -1/goe;
+    } elsif ( $name = $self->[_COMMENT] ) {
+        $name =~ s/^\(//;
+        $name =~ s/\)$//;
+        $name =~ s/($quoted_pair)/substr $1, -1/goe;
+        $name =~ s/$comment/ /go;
+    } else {
+        ($name) = $self->[_ADDRESS] =~ /($local_part)\@/o;
+    }
+    $NAME_CACHE{"@{$_[0]}"} = $name;
+}
+
+
+sub as_string {
+  warn 'altering $Email::Address::STRINGIFY is deprecated; subclass instead'
+    if $STRINGIFY ne 'format';
+
+  $_[0]->can($STRINGIFY)->($_[0]);
+}
+
+use overload '""' => 'as_string';
+
 
 1;
+
