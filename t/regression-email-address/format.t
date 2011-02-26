@@ -1,8 +1,10 @@
+use Email::Address::Loose -override; # added by Email::Address::Loose
+
 use Test::More;
 use strict;
 $^W = 1;
 
-use Email::Address::Loose;
+use Email::Address;
 
 my @tests = (
   [
@@ -42,6 +44,6 @@ my @tests = (
 plan tests => scalar @tests;
 
 for (@tests) {
-  my $addr = Email::Address::Loose->new( @{ $_->[0] } );
+  my $addr = Email::Address->new( @{ $_->[0] } );
   is( $addr->format, $_->[1], "format: $_->[1]" );
 }

@@ -1,3 +1,5 @@
+use Email::Address::Loose -override; # added by Email::Address::Loose
+
 #!perl
 use strict;
 
@@ -10,14 +12,14 @@ plan skip_all => "Encode and Encode::MIME::Header required for these tests"
 
 plan tests => 2;
 
-use Email::Address::Loose;
+use Email::Address;
 Encode->import;
 Encode::MIME::Header->import;
 
 my $name = "\x{30c6}\x{30b9}\x{30c8}"; # "Test" in Unicode Japanese
 my $mime = encode("MIME-Header", $name);
 
-my $addr = Email::Address::Loose->new($mime => 'foo@example.com');
+my $addr = Email::Address->new($mime => 'foo@example.com');
 like $addr->format, qr/^=\?UTF-8/;
 unlike $addr->format, qr/^"=\?/;
 

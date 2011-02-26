@@ -1,3 +1,5 @@
+use Email::Address::Loose -override; # added by Email::Address::Loose
+
 
 use strict;
 
@@ -11,7 +13,7 @@ if (eval "use Scalar::Util 1.09 (); 1") {
   plan tests => 6;
 }
 
-use_ok('Email::Address::Loose');
+use_ok('Email::Address');
 
 # We want to copy-on-write if we've got an object that is referenced by a
 # cache.  If we don't... bad things happen.
@@ -22,9 +24,9 @@ my $UPDATED  = 'updated@example.com';
 my $orig_refaddr;
 
 {
-  my ($addr) = Email::Address::Loose->parse($ORIGINAL);
+  my ($addr) = Email::Address->parse($ORIGINAL);
 
-  isa_ok($addr, 'Email::Address::Loose');
+  isa_ok($addr, 'Email::Address');
 
   $orig_refaddr = Scalar::Util::refaddr($addr) if $have_scalar_util;
 
@@ -35,7 +37,7 @@ my $orig_refaddr;
   is($addr->address, $UPDATED, "the address udpated properly");
 }
 
-my ($addr) = Email::Address::Loose->parse($ORIGINAL);
+my ($addr) = Email::Address->parse($ORIGINAL);
 
 if ($have_scalar_util) {
   isnt(
@@ -45,12 +47,12 @@ if ($have_scalar_util) {
   );
 }
 
-isa_ok($addr, 'Email::Address::Loose');
+isa_ok($addr, 'Email::Address');
 
 is($addr->address, $ORIGINAL, "address is parsed in properly");
 
 if ($have_scalar_util) {
-  my ($addr2) = Email::Address::Loose->parse($ORIGINAL);
+  my ($addr2) = Email::Address->parse($ORIGINAL);
   is(
     Scalar::Util::refaddr($addr),
     Scalar::Util::refaddr($addr2),

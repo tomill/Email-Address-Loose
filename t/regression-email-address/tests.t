@@ -1,10 +1,12 @@
+use Email::Address::Loose -override; # added by Email::Address::Loose
+
 use Test::More;
 use strict;
 $^W = 1;
 
 # This is a corpus of addresses to test.  Each element of @list is a pair of
 # input and expected output.  The input is a string that will be given to
-# Email::Address::Loose, with "-- ATAT --" replaced with the encircled a.
+# Email::Address, with "-- ATAT --" replaced with the encircled a.
 #
 # The output is a list of formatted addresses we expect to extract from the
 # string.
@@ -1626,17 +1628,17 @@ $tests += @{ $_->[1] } * 5 for @list;
 
 plan tests => $tests;
 
-use_ok 'Email::Address::Loose';
+use_ok 'Email::Address';
 
 for (@list) {
   $_->[0] =~ s/-- ATAT --/@/g;
-  my @addrs = Email::Address::Loose->parse($_->[0]);
+  my @addrs = Email::Address->parse($_->[0]);
   my @tests =
-    map { Email::Address::Loose->new(map { $_ ? do {s/-- ATAT --/@/g; $_} : $_ } @$_) }
+    map { Email::Address->new(map { $_ ? do {s/-- ATAT --/@/g; $_} : $_ } @$_) }
     @{$_->[1]};
 
   foreach (@addrs) {
-      isa_ok($_, 'Email::Address::Loose');
+      isa_ok($_, 'Email::Address');
       my $test = shift @tests;
       is($_->format,    $test->format, "format: " . $test->format);
       is($_->as_string, $test->format, "format: " . $test->format);
