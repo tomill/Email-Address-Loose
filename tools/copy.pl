@@ -79,6 +79,7 @@ use Email::Address::Loose::EmailValidLoose;
     
     $module =~ s/^package Email::Address;/$header\n\n/m;
     $module =~ s/^=.+?^=cut\n//msg; # strip pod
+    $module =~ s/^(sub parse {\n\s+my \(\$class, \$line\) = \@_;)/$1\n    \$class = 'Email::Address::Loose' if \$class eq 'Email::Address'; # Note: added by Email::Address::Loose\n/m;
     $module =~ s/^(my \$local_part\s+=.*)/$1\n\$local_part = Email::Address::Loose::EmailValidLoose->peek_local_part; # Note: added by Email::Address::Loose\n/m;
     $module =~ s/^__END__.*//ms;
     

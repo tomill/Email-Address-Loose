@@ -114,6 +114,8 @@ sub __cache_parse {
 
 sub parse {
     my ($class, $line) = @_;
+    $class = 'Email::Address::Loose' if $class eq 'Email::Address'; # Note: added by Email::Address::Loose
+
     return unless $line;
 
     $line =~ s/[ \t]+/ /g if $COLLAPSE_SPACES;
