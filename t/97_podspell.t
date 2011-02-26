@@ -7,3 +7,6 @@ all_pod_files_spelling_ok('lib');
 __DATA__
 Naoki Tomita
 Email::Address::Loose
+freenode
+irc
+tomi-ru
