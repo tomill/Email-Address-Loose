@@ -13,6 +13,7 @@ use Email::Address::Loose::EmailValidLoose;
 
 
 use strict;
+use warnings;
 ## no critic RequireUseWarnings
 # support pre-5.6
 

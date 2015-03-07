@@ -10,6 +10,7 @@ package Email::Address::Loose::EmailValidLoose;
 
 
 use strict;
+use warnings;
 our $VERSION = '0.05';
 
 # use Email::Valid 0.17; # Note: don't need
